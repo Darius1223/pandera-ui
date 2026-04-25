@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pandera.pandas as pa
 
-from pandera_ui import scanner
+from pandera_ui import _extract_ast as ast_mod
+from pandera_ui import _extract_runtime as rt_mod
 
 
 def test_load_module_returns_none_when_spec_missing(monkeypatch, tmp_path):
@@ -14,11 +15,11 @@ def test_load_module_returns_none_when_spec_missing(monkeypatch, tmp_path):
         return None
 
     monkeypatch.setattr(
-        scanner.importlib.util,
+        rt_mod.importlib.util,
         "spec_from_file_location",
         _fake_spec_from_file_location,
     )
-    assert scanner._load_module(target, tmp_path) is None
+    assert rt_mod.load_module(target, tmp_path) is None
 
 
 def test_runtime_extract_skips_model_when_to_schema_raises():
@@ -32,7 +33,7 @@ def test_runtime_extract_skips_model_when_to_schema_raises():
     BadModel.__module__ = "m"
     module.BadModel = BadModel
 
-    assert scanner._runtime_extract(module, Path("sample.py")) == []
+    assert rt_mod.runtime_extract(module, Path("sample.py")) == []
 
 
 def test_runtime_build_meta_extracts_index():
@@ -40,46 +41,45 @@ def test_runtime_build_meta_extracts_index():
         columns={"x": pa.Column(int)},
         index=pa.Index(int, checks=pa.Check.greater_than(0), name="idx"),
     )
-    meta = scanner._runtime_build_meta("s", schema_obj, "f.py", None)
+    meta = rt_mod._build_meta("s", schema_obj, "f.py", None)
     assert meta.index is not None
     assert meta.index.name == "idx"
     assert meta.index.checks[0].name == "greater_than"
 
 
 def test_ast_helper_branches_for_names_and_attributes():
-    assert scanner._ast_is_df_schema_call(ast.parse("DataFrameSchema()", mode="eval").body)
-    assert scanner._ast_is_df_model(ast.parse("class A(DataFrameModel):\n    pass\n").body[0])  # type: ignore[arg-type]
-    assert scanner._ast_is_column_call(ast.parse("Column(int)", mode="eval").body)  # type: ignore[arg-type]
-    assert scanner._ast_is_field_call(ast.parse("Field(gt=1)", mode="eval").body)  # type: ignore[arg-type]
+    assert ast_mod._is_df_schema_call(ast.parse("DataFrameSchema()", mode="eval").body)
+    assert ast_mod._is_df_model(ast.parse("class A(DataFrameModel):\n    pass\n").body[0])  # type: ignore[arg-type]
+    assert ast_mod._is_column_call(ast.parse("Column(int)", mode="eval").body)  # type: ignore[arg-type]
+    assert ast_mod._is_field_call(ast.parse("Field(gt=1)", mode="eval").body)  # type: ignore[arg-type]
 
 
 def test_ast_extract_columns_skips_non_constant_key():
     dict_node = ast.parse("{x: Column(int)}", mode="eval").body
     assert isinstance(dict_node, ast.Dict)
-    assert scanner._ast_extract_columns(dict_node) == []
+    assert ast_mod._extract_columns(dict_node) == []
 
 
 def test_ast_parse_checks_and_parse_check_edge_cases():
     list_checks = ast.parse("[Check.isin(['a', 'b']), 123]", mode="eval").body
-    checks = scanner._ast_parse_checks(list_checks)
+    checks = ast_mod._parse_checks(list_checks)
     assert len(checks) == 1
     assert checks[0].name == "isin"
 
     unknown = ast.parse("custom(1)", mode="eval").body
     assert isinstance(unknown, ast.Call)
-    assert scanner._ast_parse_check(unknown) is None
+    assert ast_mod._parse_check(unknown) is None
 
-    assert scanner._ast_parse_checks(ast.parse("x", mode="eval").body) == []
+    assert ast_mod._parse_checks(ast.parse("x", mode="eval").body) == []
 
 
 def test_ast_dtype_and_literal_helpers():
-    assert scanner._ast_dtype_node(ast.parse("'int64'", mode="eval").body) == "int64"
-    assert scanner._ast_dtype_node(ast.parse("int", mode="eval").body) == "int"
-    assert scanner._ast_dtype_node(ast.parse("pa.Int64", mode="eval").body) == "Int64"
-    assert scanner._ast_series_dtype(ast.parse("int", mode="eval").body) is None
+    assert ast_mod._dtype_node(ast.parse("'int64'", mode="eval").body) == "int64"
+    assert ast_mod._dtype_node(ast.parse("int", mode="eval").body) == "int"
+    assert ast_mod._dtype_node(ast.parse("pa.Int64", mode="eval").body) == "Int64"
+    assert ast_mod._series_dtype(ast.parse("int", mode="eval").body) is None
 
-    assert scanner._ast_str(ast.parse("'v'", mode="eval").body) == "v"
-    assert scanner._ast_str(ast.parse("1", mode="eval").body, "d") == "d"
-    assert scanner._ast_bool(ast.parse("True", mode="eval").body) is True
-    assert scanner._ast_bool(ast.parse("'x'", mode="eval").body, False) is False
-
+    assert ast_mod._str(ast.parse("'v'", mode="eval").body) == "v"
+    assert ast_mod._str(ast.parse("1", mode="eval").body, "d") == "d"
+    assert ast_mod._bool(ast.parse("True", mode="eval").body) is True
+    assert ast_mod._bool(ast.parse("'x'", mode="eval").body, False) is False

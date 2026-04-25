@@ -1020,7 +1020,7 @@ wheels = [
 
 [[package]]
 name = "pandera-ui"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
@@ -1032,6 +1032,11 @@ dependencies = [
     { name = "pydantic" },
     { name = "typer" },
     { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.optional-dependencies]
+rich = [
+    { name = "rich" },
 ]
 
 [package.dev-dependencies]
@@ -1053,9 +1058,11 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "pandera", specifier = ">=0.19" },
     { name = "pydantic", specifier = ">=2.0" },
+    { name = "rich", marker = "extra == 'rich'", specifier = ">=13.0" },
     { name = "typer", specifier = ">=0.12" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30" },
 ]
+provides-extras = ["rich"]
 
 [package.metadata.requires-dev]
 dev = [
