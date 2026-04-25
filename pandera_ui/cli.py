@@ -13,7 +13,11 @@ def _cli(
     project_path: Path = typer.Argument(Path("."), help="Project root to scan"),
     port: int = typer.Option(8765, "--port", "-p", help="Port for the UI server"),
     host: str = typer.Option("127.0.0.1", "--host", help="Host to bind"),
-    output_json: bool = typer.Option(False, "--json", help="Print JSON to stdout, do not start server"),
+    output_json: bool = typer.Option(
+        False,
+        "--json",
+        help="Print JSON to stdout, do not start server",
+    ),
 ) -> None:
     """Scan PROJECT_PATH for Pandera schemas and serve a documentation UI."""
     typer.echo(f"Scanning {project_path.resolve()} ...")

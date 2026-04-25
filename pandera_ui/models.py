@@ -1,4 +1,5 @@
 from typing import Any, Literal, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -38,7 +39,10 @@ class SchemaMetadata(BaseModel):
     name: str = Field(description="Schema name")
     var_name: str = Field(description="Python variable or class name in source file")
     file_path: str = Field(description="File path relative to the scanned project root")
-    source_class: Optional[str] = Field(None, description="Class name if defined via DataFrameModel")
+    source_class: Optional[str] = Field(
+        None,
+        description="Class name if defined via DataFrameModel",
+    )
     title: Optional[str] = Field(None, description="Short display title")
     description: Optional[str] = Field(None, description="Schema documentation")
     coerce: bool = Field(False, description="Whether dtypes are coerced automatically")

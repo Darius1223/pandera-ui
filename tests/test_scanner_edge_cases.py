@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import pandera_ui.server as srv
 from pandera_ui.scanner import scan_project
 

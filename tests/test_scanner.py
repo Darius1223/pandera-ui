@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pytest
-
 from pandera_ui.scanner import scan_project
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"

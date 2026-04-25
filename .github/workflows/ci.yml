@@ -4,10 +4,22 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      run_ui_tests:
+        description: "Run Playwright UI tests"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "0 3 * * *"
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
@@ -22,8 +34,39 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Lint
+        run: uv run ruff check .
+
       - name: Type check
         run: uv run mypy pandera_ui/
 
       - name: Run tests
-        run: uv run pytest tests/ -q --tb=short --ignore=tests/test_ui.py --cov=pandera_ui --cov-report=term-missing
+        run: uv run pytest tests/ -q --tb=short --ignore=tests/test_ui.py --cov=pandera_ui --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.13'
+        uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true
+          files: ./coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
+
+  test-ui:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_ui_tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install Playwright browser
+        run: uv run playwright install chromium
+
+      - name: Run UI tests
+        run: uv run pytest tests/test_ui.py -q

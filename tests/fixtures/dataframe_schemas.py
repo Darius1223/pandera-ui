@@ -4,7 +4,11 @@ orders_schema = pa.DataFrameSchema(
     name="orders",
     description="E-commerce order records",
     columns={
-        "order_id": pa.Column(int, checks=pa.Check.greater_than(0), description="Unique order identifier"),
+        "order_id": pa.Column(
+            int,
+            checks=pa.Check.greater_than(0),
+            description="Unique order identifier",
+        ),
         "customer_id": pa.Column(int, nullable=False, description="FK to customers table"),
         "amount": pa.Column(
             float,
