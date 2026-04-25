@@ -10,3 +10,5 @@ build/
 *.egg-info/
 .idea/
 .DS_Store
+.claude/
+.cluade/
