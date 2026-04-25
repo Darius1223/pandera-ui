@@ -7,9 +7,9 @@ validation checks, nullability, titles, and descriptions in one searchable UI. ð
 
 [![PyPI](https://img.shields.io/pypi/v/pandera-ui)](https://pypi.org/project/pandera-ui/)
 [![Python](https://img.shields.io/pypi/pyversions/pandera-ui)](https://pypi.org/project/pandera-ui/)
-[![CI](https://github.com/darius-krsk/pandera-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/darius-krsk/pandera-ui/actions/workflows/ci.yml)
-[![Codecov](https://codecov.io/gh/darius-krsk/pandera-ui/branch/main/graph/badge.svg)](https://codecov.io/gh/darius-krsk/pandera-ui)
-[![License](https://img.shields.io/github/license/darius-krsk/pandera-ui)](https://github.com/darius-krsk/pandera-ui/blob/main/LICENSE)
+[![CI](https://github.com/Darius1223/pandera-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/Darius1223/pandera-ui/actions/workflows/ci.yml)
+[![Codecov](https://codecov.io/gh/Darius1223/pandera-ui/branch/main/graph/badge.svg)](https://codecov.io/gh/Darius1223/pandera-ui)
+[![License](https://img.shields.io/github/license/Darius1223/pandera-ui)](https://github.com/Darius1223/pandera-ui/blob/main/LICENSE)
 
 ## Demo
 
