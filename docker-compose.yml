@@ -1,0 +1,7 @@
+services:
+  pandera-ui:
+    build: .
+    ports:
+      - "8765:8765"
+    volumes:
+      - "${PROJECT_PATH:-.}:/project:ro"

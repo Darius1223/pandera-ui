@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/ildar/PycharmProjects/pets/pandera-ui && uv run pytest tests/ -q --tb=short 2>&1 || true"
+          }
+        ]
+      }
+    ]
+  }
+}
