@@ -17,7 +17,7 @@ try:
     from rich.progress import Progress, SpinnerColumn, TextColumn
     from rich.table import Table
 
-    _console = Console()
+    _console = Console(stderr=True)
     _HAS_RICH = True
 except ImportError:
     _HAS_RICH = False
@@ -39,14 +39,14 @@ def scan_spinner(path: str) -> Generator[None, None, None]:
             progress.add_task(path, total=None)
             yield
     else:
-        typer.echo(f"Scanning {path} ...")
+        typer.echo(f"Scanning {path} ...", err=True)
         yield
 
 
 def print_summary(schemas: list[SchemaMetadata]) -> None:
     """Print count + per-schema table (rich) or a plain echo line."""
     if not _HAS_RICH:
-        typer.echo(f"Found {len(schemas)} schema(s).")
+        typer.echo(f"Found {len(schemas)} schema(s).", err=True)
         return
 
     _console.print(f"\n[bold green]Found {len(schemas)} schema(s).[/bold green]\n")
@@ -73,4 +73,4 @@ def print_server_ready(host: str, port: int) -> None:
     if _HAS_RICH:
         _console.print(f"\n[bold green]UI ready at[/bold green] [link={url}]{url}[/link]\n")
     else:
-        typer.echo(f"UI ready at {url}")
+        typer.echo(f"UI ready at {url}", err=True)

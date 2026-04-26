@@ -33,6 +33,21 @@ class IndexMetadata(BaseModel):
     checks: list[CheckMetadata] = Field(default_factory=list)
 
 
+class CoverageReport(BaseModel):
+    """Documentation coverage statistics for a set of schemas."""
+
+    schema_count: int
+    schemas_with_title: int
+    schemas_with_description: int
+    column_count: int
+    columns_with_title: int
+    columns_with_description: int
+    schema_title_pct: float = Field(description="% of schemas with a title")
+    schema_description_pct: float = Field(description="% of schemas with a description")
+    column_title_pct: float = Field(description="% of columns with a title")
+    column_description_pct: float = Field(description="% of columns with a description")
+
+
 class SchemaMetadata(BaseModel):
     """Full metadata for one Pandera schema (DataFrameSchema or DataFrameModel subclass)."""
 

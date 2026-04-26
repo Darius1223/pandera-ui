@@ -5,7 +5,8 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
-from .models import SchemaMetadata
+from ._coverage import compute_coverage
+from .models import CoverageReport, SchemaMetadata
 from .scanner import scan_project
 
 app = FastAPI(title="Pandera UI", docs_url=None, redoc_url=None)
@@ -23,6 +24,12 @@ def load_schemas(project_path: str) -> None:
 def get_schemas() -> list[SchemaMetadata]:
     """Return all discovered schemas as JSON."""
     return _schemas
+
+
+@app.get("/api/coverage", response_model=CoverageReport)
+def get_coverage() -> CoverageReport:
+    """Return documentation coverage statistics."""
+    return compute_coverage(_schemas)
 
 
 @app.get("/", response_class=HTMLResponse)

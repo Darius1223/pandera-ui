@@ -7,8 +7,10 @@ __pycache__/
 htmlcov/
 dist/
 build/
+site/
 *.egg-info/
 .idea/
 .DS_Store
 .claude/
 .cluade/
+frontend/demo-data.json

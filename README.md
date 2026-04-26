@@ -1,12 +1,19 @@
+<div align="center">
+
 # pandera-ui
 
-> **Swagger for your Pandera schemas.** One command — instant searchable documentation for every dataframe schema in your project.
+**Swagger for your Pandera schemas.**  
+One command — instant searchable documentation for every dataframe schema in your project.
 
-[![PyPI](https://img.shields.io/pypi/v/pandera-ui)](https://pypi.org/project/pandera-ui/)
+[![PyPI](https://img.shields.io/pypi/v/pandera-ui?color=blue)](https://pypi.org/project/pandera-ui/)
 [![Python](https://img.shields.io/pypi/pyversions/pandera-ui)](https://pypi.org/project/pandera-ui/)
 [![CI](https://github.com/Darius1223/pandera-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/Darius1223/pandera-ui/actions/workflows/ci.yml)
 [![Codecov](https://codecov.io/gh/Darius1223/pandera-ui/branch/main/graph/badge.svg)](https://codecov.io/gh/Darius1223/pandera-ui)
-[![License: MIT](https://img.shields.io/github/license/Darius1223/pandera-ui)](https://github.com/Darius1223/pandera-ui/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/github/license/Darius1223/pandera-ui)](LICENSE)
+
+[**Documentation**](https://darius1223.github.io/pandera-ui/) · [**Live Demo**](https://darius1223.github.io/pandera-ui/demo/) · [**PyPI**](https://pypi.org/project/pandera-ui/) · [**Changelog**](CHANGELOG.md)
+
+</div>
 
 ---
 
@@ -31,14 +38,16 @@ pandera-ui scans your project, discovers every `DataFrameSchema` and `DataFrameM
 
 ## Features
 
-| Feature | Description |
-|---|---|
-| **Zero config** | Point at a directory, get a UI. No decorators, no config files. |
-| **Two-pass extraction** | Runtime import for accuracy + AST fallback when imports fail (missing deps, DB connections, etc.) |
-| **Rich CLI** | Progress spinner and summary table when `rich` is installed |
-| **CI-friendly** | `--json` flag exports structured metadata for linting, diffing, or downstream tooling |
-| **Fast navigation** | Filter by type, sort by name/file/columns, full-text search |
-| **Team-ready** | Dark/light theme, EN/RU/FR/DE localization |
+| | Feature | Description |
+|---|---|---|
+| ⚡ | **Zero config** | Point at a directory, get a UI. No decorators, no config files. |
+| 🔍 | **Two-pass extraction** | Runtime import for accuracy + AST fallback when imports fail (missing deps, DB connections, etc.) |
+| 👁 | **Live reload** | `--watch` reloads schemas automatically when `.py` files change |
+| 📄 | **Export** | `--export markdown` / `--export html` — static docs for README or Sphinx |
+| 📊 | **Coverage** | `--coverage` shows what % of schemas and columns are documented |
+| 🔧 | **CI-friendly** | `--json` exports structured metadata; `/api/coverage` for quality gates |
+| 🎨 | **Rich CLI** | Progress spinner and summary table when `rich` is installed |
+| 🌍 | **Team-ready** | Dark/light theme, EN/RU/FR/DE localization, full-text search |
 
 ---
 
@@ -53,18 +62,7 @@ pandera-ui .
 
 # Scan a specific project on a custom port
 pandera-ui /path/to/myproject --port 9000
-
-# Pretty terminal output (spinner + summary table)
-pip install pandera-ui[rich]
-pandera-ui .
-
-# Export JSON for CI / tooling
-pandera-ui . --json > schemas.json
 ```
-
----
-
-## What you get
 
 **Terminal output** (with `pandera-ui[rich]`):
 
@@ -76,30 +74,31 @@ Found 4 schema(s).
  products  DataFrameSchema  dataframe_schemas.py   4
  users     DataFrameModel   schema_models.py       4
  events    DataFrameModel   schema_models.py       5
+
+UI ready at http://127.0.0.1:8765
 ```
 
-**Browser UI:** searchable sidebar, column table with dtypes and checks, AST/runtime badge, dark/light theme.
+Open `http://localhost:8765` in the browser — searchable sidebar, column table with dtypes and checks, AST/runtime badge, dark/light theme.
 
 ---
 
 ## Installation
 
 ```bash
-# Core
-pip install pandera-ui
-
-# With beautiful terminal output
-pip install pandera-ui[rich]
+pip install pandera-ui            # core
+pip install pandera-ui[rich]      # + spinner and summary table
+pip install pandera-ui[watch]     # + --watch live-reload
+pip install pandera-ui[rich,watch]  # everything
 ```
 
 With [uv](https://github.com/astral-sh/uv):
 
 ```bash
 uv add pandera-ui
-uv add pandera-ui[rich]   # optional rich UI
+uv add pandera-ui[rich,watch]
 ```
 
-Requires Python 3.10+.
+Requires **Python 3.10+**.
 
 ### Docker
 
@@ -110,8 +109,42 @@ docker run --rm \
   ghcr.io/darius-krsk/pandera-ui:latest
 ```
 
+---
+
+## All CLI options
+
 ```bash
-PROJECT_PATH=/path/to/myproject docker compose up
+# Export schema docs (no server started)
+pandera-ui . --export markdown > schemas.md
+pandera-ui . --export html    > schemas.html
+
+# Check documentation coverage
+pandera-ui . --coverage
+
+# Live reload on .py changes
+pip install pandera-ui[watch]
+pandera-ui . --watch
+
+# Export raw JSON for CI / tooling
+pandera-ui . --json > schemas.json
+```
+
+**Full CLI reference:**
+
+```
+Usage: pandera-ui [OPTIONS] [PROJECT_PATH]
+
+Arguments:
+  [PROJECT_PATH]  Project root to scan  [default: .]
+
+Options:
+  -p, --port INTEGER           Port for the UI server  [default: 8765]
+  --host TEXT                  Host to bind  [default: 127.0.0.1]
+  --json                       Print JSON to stdout, no server
+  --export [markdown|html]     Export docs to stdout, no server
+  --coverage                   Print coverage stats and exit
+  -w, --watch                  Auto-reload schemas on .py changes
+  --help                       Show this message and exit.
 ```
 
 ---
@@ -119,7 +152,7 @@ PROJECT_PATH=/path/to/myproject docker compose up
 ## What gets extracted
 
 | Schema style | Example | Support |
-| --- | --- | --- |
+|---|---|---|
 | `pa.DataFrameSchema(...)` | `orders = pa.DataFrameSchema(...)` | Full |
 | `pa.DataFrameModel` subclass | `class Orders(pa.DataFrameModel)` | Full |
 | File with import errors | imports a missing library | AST fallback |
@@ -127,10 +160,6 @@ PROJECT_PATH=/path/to/myproject docker compose up
 **Per column:** name, dtype, nullable, required, checks (with parameters), title, description.
 
 **Per schema:** name, coerce, title, description, index, source file, variable/class name.
-
-### AST fallback
-
-When a file can't be imported (missing dependency, DB connection at module level, etc.), pandera-ui falls back to static AST analysis — no import side effects, no crashes. Schemas extracted this way get an `AST` badge in the UI.
 
 ---
 
@@ -144,26 +173,17 @@ for schema in schemas:
     print(schema.name, [c.name for c in schema.columns])
 ```
 
-`scan_project` returns a list of `SchemaMetadata` Pydantic models.
-See [`pandera_ui/models.py`](pandera_ui/models.py) for the full structure.
+`scan_project` returns a list of `SchemaMetadata` Pydantic models — serialize with `.model_dump()`.
 
----
+```python
+# Compute coverage programmatically
+from pandera_ui._coverage import compute_coverage, format_coverage
+report = compute_coverage(schemas)
+print(format_coverage(report))
 
-## CLI reference
-
-```
-Usage: pandera-ui [OPTIONS] [PROJECT_PATH]
-
-  Scan PROJECT_PATH for Pandera schemas and serve a documentation UI.
-
-Arguments:
-  [PROJECT_PATH]  Project root to scan  [default: .]
-
-Options:
-  -p, --port INTEGER  Port for the UI server  [default: 8765]
-  --host TEXT         Host to bind  [default: 127.0.0.1]
-  --json              Print JSON to stdout, do not start server
-  --help              Show this message and exit.
+# Export to Markdown
+from pandera_ui._export import to_markdown
+print(to_markdown(schemas))
 ```
 
 ---
@@ -175,9 +195,11 @@ pandera_ui/
   scanner.py            # discovery: walks project, dispatches per file
   _extract_runtime.py   # pass 1: dynamic import + introspection
   _extract_ast.py       # pass 2: static AST parse (fallback)
-  models.py             # Pydantic models: SchemaMetadata, ColumnMetadata, CheckMetadata
-  server.py             # FastAPI: GET /api/schemas, GET /
+  models.py             # Pydantic models: SchemaMetadata, ColumnMetadata …
+  server.py             # FastAPI: GET /api/schemas, GET /api/coverage, GET /
   cli.py                # Typer CLI entry point
+  _export.py            # Markdown and HTML renderers
+  _coverage.py          # Documentation coverage calculator
   _console.py           # optional rich output (spinner, summary table)
 frontend/
   index.html            # single-page UI (vanilla JS, no build step)
@@ -188,21 +210,18 @@ frontend/
 ## Development
 
 ```bash
-git clone https://github.com/darius-krsk/pandera-ui
+git clone https://github.com/Darius1223/pandera-ui
 cd pandera-ui
-make setup            # uv sync
-make setup-ui-tests   # install Playwright browser
+uv sync
 
-make lint             # ruff check
-make type             # mypy
-make test             # unit tests
-make test-cov         # unit tests + coverage report
-
-make test-ui          # Playwright E2E tests (requires Playwright)
-make run              # start UI against test fixtures
+make lint        # ruff check
+make type        # mypy
+make test        # unit tests
+make test-cov    # unit tests + coverage report
+make run         # start UI against test fixtures
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for raw commands and PR guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for PR guidelines.
 
 ---
 

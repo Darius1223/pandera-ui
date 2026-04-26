@@ -552,14 +552,21 @@
 
     try {
       const res = await fetch('/api/schemas');
+      if (!res.ok) throw new Error(res.status);
       allSchemas = await res.json();
-      document.getElementById('count').textContent = t('schemas_count', allSchemas.length);
-      renderSidebar();
-      if (allSchemas.length > 0) selectSchema(0);
-      else showEmpty();
     } catch {
-      document.getElementById('loading').textContent = t('load_error');
+      try {
+        const demo = await fetch('./demo-data.json');
+        allSchemas = await demo.json();
+      } catch {
+        document.getElementById('loading').textContent = t('load_error');
+        return;
+      }
     }
+    document.getElementById('count').textContent = t('schemas_count', allSchemas.length);
+    renderSidebar();
+    if (allSchemas.length > 0) selectSchema(0);
+    else showEmpty();
   }
 
   // ── Sidebar ───────────────────────────────────────────────────────────────

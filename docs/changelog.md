@@ -12,7 +12,7 @@ All notable changes to pandera-ui are documented here.
 - `pandera_ui._export` module with `to_markdown()` and `to_html()` functions
 - `pandera_ui._coverage` module with `compute_coverage()` and `format_coverage()` functions
 - `watch` optional extra: `pip install pandera-ui[watch]`
-- MkDocs documentation site at [darius1223.github.io/pandera-ui](https://darius1223.github.io/pandera-ui/)
+- MkDocs documentation site
 
 ## [0.2.0] — 2026-04-25
 
