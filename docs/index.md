@@ -69,4 +69,4 @@ pandera-ui scans your project, discovers every `DataFrameSchema` and `DataFrameM
 
 ## Live demo
 
-The pandera-ui UI itself is hosted at [**darius1223.github.io/pandera-ui/demo/**](./demo/) — preloaded with example schemas from the test suite. No installation needed.
+The pandera-ui UI itself is hosted at [**darius1223.github.io/pandera-ui/demo/**](https://darius1223.github.io/pandera-ui/demo/) — preloaded with example schemas from the test suite. No installation needed.
