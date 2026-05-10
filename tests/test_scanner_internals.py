@@ -49,7 +49,8 @@ def test_runtime_build_meta_extracts_index():
 
 def test_ast_helper_branches_for_names_and_attributes():
     assert ast_mod._is_df_schema_call(ast.parse("DataFrameSchema()", mode="eval").body)
-    assert ast_mod._is_df_model(ast.parse("class A(DataFrameModel):\n    pass\n").body[0])  # type: ignore[arg-type]
+    tree = ast.parse("class A(DataFrameModel):\n    pass\n")
+    assert "A" in ast_mod._collect_model_names(tree)
     assert ast_mod._is_column_call(ast.parse("Column(int)", mode="eval").body)  # type: ignore[arg-type]
     assert ast_mod._is_field_call(ast.parse("Field(gt=1)", mode="eval").body)  # type: ignore[arg-type]
 

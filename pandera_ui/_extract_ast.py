@@ -43,6 +43,7 @@ def ast_extract(path: object, relative: object) -> list[SchemaMetadata]:
     except (SyntaxError, UnicodeDecodeError):
         return []
 
+    model_names = _collect_model_names(tree)
     results: list[SchemaMetadata] = []
 
     for node in ast.walk(tree):
@@ -53,7 +54,7 @@ def ast_extract(path: object, relative: object) -> list[SchemaMetadata]:
                     if meta:
                         results.append(meta)
 
-        elif isinstance(node, ast.ClassDef) and _is_df_model(node):
+        elif isinstance(node, ast.ClassDef) and node.name in model_names:
             meta = _build_from_class(node, str(relative))
             if meta:
                 results.append(meta)
@@ -76,13 +77,25 @@ def _is_df_schema_call(node: ast.expr) -> bool:
     return False
 
 
-def _is_df_model(node: ast.ClassDef) -> bool:
-    for base in node.bases:
-        if isinstance(base, ast.Attribute) and base.attr == "DataFrameModel":
-            return True
-        if isinstance(base, ast.Name) and base.id == "DataFrameModel":
-            return True
-    return False
+def _collect_model_names(tree: ast.Module) -> set[str]:
+    """Return all class names in *tree* that transitively inherit from DataFrameModel."""
+    known: set[str] = {"DataFrameModel"}
+    changed = True
+    while changed:
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name not in known:
+                for base in node.bases:
+                    base_name: Optional[str] = None
+                    if isinstance(base, ast.Attribute):
+                        base_name = base.attr
+                    elif isinstance(base, ast.Name):
+                        base_name = base.id
+                    if base_name in known:
+                        known.add(node.name)
+                        changed = True
+    known.discard("DataFrameModel")
+    return known
 
 
 # ---------------------------------------------------------------------------

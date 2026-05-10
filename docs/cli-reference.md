@@ -119,6 +119,63 @@ Useful during schema development — edit a schema, save, and the UI reflects th
 
 ---
 
+### `--version`
+
+Print the installed version and exit.
+
+```bash
+pandera-ui --version
+# pandera-ui 1.0.4
+```
+
+---
+
+### `--verbose` / `-v`
+
+Print per-file scan progress to stderr. Shows which extraction method was used
+(`runtime`, `ast`, or `ast[fallback]`) and how many schemas were found in each file.
+
+```bash
+pandera-ui . --verbose
+pandera-ui . -v
+```
+
+Example output:
+
+```
+  runtime            data/orders.py  (1 schema(s))
+  ast[fallback]      data/broken.py  (0 schema(s))
+  runtime            models/users.py  (2 schema(s))
+```
+
+---
+
+### `--workers`
+
+Number of parallel threads used during scanning. Default: `1`.
+
+Useful for large projects with many Python files where import time dominates.
+
+```bash
+pandera-ui . --workers 4
+```
+
+---
+
+### `--no-import`
+
+Skip dynamic import entirely and use the AST extractor for every file. Faster and
+side-effect-free, but less accurate — dynamic schema construction and runtime checks
+are not evaluated.
+
+```bash
+pandera-ui . --no-import
+```
+
+All schemas discovered this way will have `"metadata_source": "ast"` in the JSON output.
+
+---
+
 ### `--help`
 
 Show the help message and exit.

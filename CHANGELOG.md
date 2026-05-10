@@ -2,6 +2,20 @@
 
 All notable changes to pandera-ui are documented here.
 
+## [1.1.0] — 2026-05-10
+
+### Added
+- `--version` flag — print installed version and exit
+- `--verbose` / `-v` flag — print per-file scan progress to stderr (method used, schema count)
+- `--workers N` flag — parallel file scanning via thread pool; useful for large projects
+- `--no-import` flag — AST-only mode, skips dynamic import for faster and side-effect-free scanning
+
+### Fixed
+- AST extractor now finds transitive `DataFrameModel` subclasses (`class Child(MyBase)` when `class MyBase(pa.DataFrameModel)` is defined in the same file)
+
+### Docs
+- `docs/cli-reference.md` updated with all new flags and examples
+
 ## [1.0.4] — 2026-05-10
 
 ### CI / Dev

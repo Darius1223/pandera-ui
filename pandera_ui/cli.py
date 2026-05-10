@@ -11,6 +11,13 @@ from ._console import print_server_ready, print_summary, scan_spinner
 from .scanner import scan_project
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        from importlib.metadata import version
+        typer.echo(f"pandera-ui {version('pandera-ui')}")
+        raise typer.Exit()
+
+
 def cli_app(
     project_path: Path = typer.Argument(Path("."), help="Project root to scan"),
     port: int = typer.Option(8765, "--port", "-p", help="Port for the UI server"),
@@ -36,10 +43,33 @@ def cli_app(
         "-w",
         help="Auto-reload schemas when .py files change (requires watchdog)",
     ),
+    verbose: bool = typer.Option(
+        False,
+        "--verbose",
+        "-v",
+        help="Print per-file scan progress to stderr",
+    ),
+    workers: int = typer.Option(
+        1,
+        "--workers",
+        help="Number of parallel workers for scanning",
+    ),
+    no_import: bool = typer.Option(
+        False,
+        "--no-import",
+        help="Skip dynamic import; use AST only (faster, less accurate)",
+    ),
+    version: Optional[bool] = typer.Option(  # noqa: A002
+        None,
+        "--version",
+        callback=_version_callback,
+        is_eager=True,
+        help="Show version and exit",
+    ),
 ) -> None:
     """Scan PROJECT_PATH for Pandera schemas and serve a documentation UI."""
     with scan_spinner(str(project_path.resolve())):
-        schemas = scan_project(project_path)
+        schemas = scan_project(project_path, workers=workers, verbose=verbose, no_import=no_import)
 
     print_summary(schemas)
 
