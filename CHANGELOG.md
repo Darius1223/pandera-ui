@@ -2,6 +2,21 @@
 
 All notable changes to pandera-ui are documented here.
 
+## [1.0.4] — 2026-05-10
+
+### CI / Dev
+- Added `nox` compat matrix: tests 6 combinations of pandera (0.27.1, 0.31.x) × pandas (2.1.4, 2.2.3, 2.3.3) on every push
+- CI `compat` job now delegates to `nox -s compat` instead of hand-rolled pip steps
+- `nox>=2024.10` added to dev dependencies
+- Removed `test_matrix.sh` (superseded by nox)
+
+## [1.0.3] — 2026-05-10
+
+### Fixed
+- Relaxed `pandera` lower bound to `>=0.27.1` (actual minimum where `pandera.pandas` and `DataFrameModel.to_schema()` work correctly with NumPy 2.x)
+- Relaxed `pandas` lower bound to `>=2.1.4` (pandas 2.1.x / 2.2.x / 2.3.x all supported)
+- Removed explicit `numpy` pin — transitive dependency, version resolved by pandera/pandas
+
 ## [0.3.0] — 2026-04-26
 
 ### Added
