@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pandera UI</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a84ff'/><text x='16' y='23' text-anchor='middle' font-size='20' font-family='monospace' fill='white'>P</text></svg>">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Dark theme (default) ── */
+    :root {
+      --bg: #0f1117;
+      --sidebar-bg: #161b22;
+      --card-bg: #1c2128;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --warn: #d29922;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --tag-bg: #21262d;
+      --red: #f85149;
+      --sidebar-w: 280px;
+      --header-h: 52px;
+    }
+
+    /* ── Light theme ── */
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --sidebar-bg: #f6f8fa;
+      --card-bg: #eaeef2;
+      --border: #d0d7de;
+      --accent: #0969da;
+      --accent2: #1a7f37;
+      --warn: #9a6700;
+      --text: #1f2328;
+      --muted: #636c76;
+      --tag-bg: #eaeef2;
+      --red: #cf222e;
+    }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+           background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Header ── */
+    header {
+      height: var(--header-h); background: var(--sidebar-bg); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0;
+    }
+    header svg { color: var(--accent); flex-shrink: 0; }
+    header h1 { font-size: 17px; font-weight: 600; letter-spacing: -.3px; }
+    header .version { font-size: 11px; color: var(--muted); background: var(--tag-bg);
+                      padding: 2px 7px; border-radius: 12px; border: 1px solid var(--border); }
+    header .count { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+    /* ── Theme toggle ── */
+    .theme-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .1s; flex-shrink: 0;
+    }
+    .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Language selector ── */
+    .lang-selector { display: flex; gap: 2px; }
+    .lang-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;
+      font-weight: 600; font-family: inherit; letter-spacing: .3px; transition: all .1s;
+    }
+    .lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .lang-btn.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+    /* ── Layout ── */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    aside {
+      width: var(--sidebar-w); background: var(--sidebar-bg); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .search-wrap { padding: 12px; border-bottom: 1px solid var(--border); }
+    .search-wrap input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); padding: 6px 10px; font-size: 13px; outline: none;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      padding: 8px 12px; border-bottom: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .filter-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .filter-label {
+      font-size: 10px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: .5px; min-width: 48px; flex-shrink: 0;
+    }
+    .filter-btns { display: flex; gap: 2px; }
+    .filter-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      padding: 2px 7px; border-radius: 4px; cursor: pointer; font-size: 11px;
+      font-family: inherit; transition: all .1s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+    #sort-select {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      border-radius: 4px; padding: 2px 6px; font-size: 11px; font-family: inherit; cursor: pointer;
+    }
+
+    /* ── Schema list ── */
+    .schema-list { overflow-y: auto; flex: 1; padding: 8px 0; }
+    .file-group { margin-bottom: 2px; }
+    .file-label {
+      font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px;
+      padding: 8px 14px 4px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .schema-item {
+      display: flex; align-items: center; gap: 8px; padding: 7px 14px; cursor: pointer;
+      font-size: 13px; user-select: none; border-left: 2px solid transparent; transition: background .1s;
+    }
+    .schema-item:hover { background: var(--card-bg); }
+    .schema-item.active {
+      background: color-mix(in srgb, var(--accent) 12%, transparent);
+      border-left-color: var(--accent); color: var(--accent);
+    }
+    .schema-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+    .schema-item .dot.model { background: var(--accent); }
+
+    /* ── Main content ── */
+    main { flex: 1; overflow-y: auto; padding: 28px 36px; }
+
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 60%; gap: 12px; color: var(--muted);
+    }
+    .empty-state svg { opacity: .3; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── Schema detail ── */
+    .schema-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+    .schema-header h2 { font-size: 22px; font-weight: 600; }
+    .schema-header .meta { margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      font-size: 11px; padding: 2px 8px; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--tag-bg); color: var(--muted);
+    }
+    .badge.green  { border-color: var(--accent2); color: var(--accent2); }
+    .badge.blue   { border-color: var(--accent);  color: var(--accent); }
+    .badge.yellow { border-color: var(--warn);     color: var(--warn); }
+    .badge.red    { border-color: var(--red);      color: var(--red); }
+    .ast-warning {
+      display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+      background: color-mix(in srgb, var(--red) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+      border-radius: 6px; font-size: 12px; color: var(--red); margin-bottom: 20px;
+    }
+    .schema-desc { color: var(--muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+    .schema-path { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+    .schema-path code { background: var(--tag-bg); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+
+    /* ── Columns table ── */
+    .section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+                     letter-spacing: .5px; margin-bottom: 12px; }
+    .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 32px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: var(--card-bg); }
+    th { padding: 10px 14px; text-align: left; color: var(--muted); font-weight: 500;
+         border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: color-mix(in srgb, var(--text) 2%, transparent); }
+
+    .col-name { font-family: monospace; font-size: 13px; color: var(--text); font-weight: 500; }
+    .dtype {
+      font-family: monospace; font-size: 12px; color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 10%, transparent); padding: 2px 6px; border-radius: 4px;
+    }
+    .check-tag {
+      display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
+      background: var(--tag-bg); border: 1px solid var(--border); border-radius: 4px;
+      padding: 2px 6px; margin: 2px 2px 2px 0; color: var(--text); white-space: nowrap;
+    }
+    .check-tag .check-name { color: var(--warn); font-family: monospace; }
+    .check-tag .check-val  { color: var(--accent2); }
+    .flag-yes { color: var(--red);   font-size: 12px; }
+    .flag-no  { color: var(--muted); font-size: 12px; }
+    .desc-text { color: var(--muted); font-size: 12px; }
+
+    /* ── Misc ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .loading { padding: 60px; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+    <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+  </svg>
+  <h1>Pandera UI</h1>
+  <span class="version">schemas</span>
+  <span class="count" id="count"></span>
+  <button id="theme-toggle" class="theme-btn" title="Toggle theme">
+    <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+  <div class="lang-selector" id="lang-selector">
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="ru">RU</button>
+    <button class="lang-btn" data-lang="fr">FR</button>
+    <button class="lang-btn" data-lang="de">DE</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="search-wrap">
+      <input id="search" type="text" autocomplete="off" />
+    </div>
+    <div class="filter-bar" id="filter-bar">
+      <div class="filter-row">
+        <span class="filter-label" data-i18n="filter_type"></span>
+        <div class="filter-btns" id="type-filter">
+          <button class="filter-btn active" data-val="all"            data-i18n="filter_all"></button>
+          <button class="filter-btn"        data-val="DataFrameSchema" data-i18n="filter_df_schema"></button>
+          <button class="filter-btn"        data-val="DataFrameModel"  data-i18n="filter_df_model"></button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label" data-i18n="filter_source"></span>
+        <div class="filter-btns" id="source-filter">
+          <button class="filter-btn active" data-val="all"     data-i18n="filter_all"></button>
+          <button class="filter-btn"        data-val="runtime" data-i18n="filter_runtime"></button>
+          <button class="filter-btn"        data-val="ast"     data-i18n="filter_ast"></button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label" data-i18n="filter_sort"></span>
+        <select id="sort-select">
+          <option value="name-asc"  data-i18n="sort_name_asc"></option>
+          <option value="name-desc" data-i18n="sort_name_desc"></option>
+          <option value="cols-asc"  data-i18n="sort_cols_asc"></option>
+          <option value="cols-desc" data-i18n="sort_cols_desc"></option>
+        </select>
+      </div>
+    </div>
+    <div class="schema-list" id="schema-list"></div>
+  </aside>
+  <main id="main">
+    <div class="loading" id="loading"></div>
+  </main>
+</div>
+
+<script>
+  // ── Translations ──────────────────────────────────────────────────────────
+
+  const LANGS = ['en', 'ru', 'fr', 'de'];
+
+  const tr = {
+    en: {
+      filter_placeholder: 'Filter schemas…',
+      loading:            'Loading schemas…',
+      load_error:         'Failed to load schemas.',
+      no_schemas:         'No Pandera schemas found in this project.',
+      section_columns:    'Columns',
+      section_index:      'Index',
+      th_name:            'Name',
+      th_type:            'Type',
+      th_nullable:        'Nullable',
+      th_required:        'Required',
+      th_checks:          'Checks',
+      th_description:     'Description',
+      defined_in:         'Defined in',
+      as_var:             'as',
+      no_columns:         'No columns defined',
+      nullable_yes:       'nullable',
+      required_no:        'optional',
+      badge_coerce:       'coerce',
+      ast_warning:        '⚠ Import failed — metadata extracted via static AST analysis. Dynamic values may be missing.',
+      filter_type:        'Type',
+      filter_source:      'Source',
+      filter_sort:        'Sort',
+      filter_all:         'All',
+      filter_runtime:     'Runtime',
+      filter_ast:         'AST',
+      filter_df_schema:   'DataFrameSchema',
+      filter_df_model:    'DataFrameModel',
+      sort_name_asc:      'Name A→Z',
+      sort_name_desc:     'Name Z→A',
+      sort_cols_asc:      'Columns ↑',
+      sort_cols_desc:     'Columns ↓',
+      schemas_count:      n => `${n} schema${n !== 1 ? 's' : ''}`,
+      columns_count:      n => `${n} column${n !== 1 ? 's' : ''}`,
+    },
+    ru: {
+      filter_placeholder: 'Поиск схем…',
+      loading:            'Загрузка схем…',
+      load_error:         'Не удалось загрузить схемы.',
+      no_schemas:         'Схемы Pandera в проекте не найдены.',
+      section_columns:    'Колонки',
+      section_index:      'Индекс',
+      th_name:            'Название',
+      th_type:            'Тип',
+      th_nullable:        'Nullable',
+      th_required:        'Обязательное',
+      th_checks:          'Проверки',
+      th_description:     'Описание',
+      defined_in:         'Определено в',
+      as_var:             'как',
+      no_columns:         'Колонки не определены',
+      nullable_yes:       'nullable',
+      required_no:        'необязательное',
+      badge_coerce:       'coerce',
+      ast_warning:        '⚠ Импорт не удался — метаданные извлечены статическим анализом AST. Динамические значения могут отсутствовать.',
+      filter_type:        'Тип',
+      filter_source:      'Источник',
+      filter_sort:        'Сортировка',
+      filter_all:         'Все',
+      filter_runtime:     'Runtime',
+      filter_ast:         'AST',
+      filter_df_schema:   'DataFrameSchema',
+      filter_df_model:    'DataFrameModel',
+      sort_name_asc:      'Имя A→Z',
+      sort_name_desc:     'Имя Z→A',
+      sort_cols_asc:      'Колонки ↑',
+      sort_cols_desc:     'Колонки ↓',
+      schemas_count: n => {
+        const m = n % 10, c = n % 100;
+        if (m === 1 && c !== 11) return `${n} схема`;
+        if (m >= 2 && m <= 4 && (c < 10 || c >= 20)) return `${n} схемы`;
+        return `${n} схем`;
+      },
+      columns_count: n => {
+        const m = n % 10, c = n % 100;
+        if (m === 1 && c !== 11) return `${n} колонка`;
+        if (m >= 2 && m <= 4 && (c < 10 || c >= 20)) return `${n} колонки`;
+        return `${n} колонок`;
+      },
+    },
+    fr: {
+      filter_placeholder: 'Filtrer les schémas…',
+      loading:            'Chargement des schémas…',
+      load_error:         'Échec du chargement des schémas.',
+      no_schemas:         'Aucun schéma Pandera trouvé dans ce projet.',
+      section_columns:    'Colonnes',
+      section_index:      'Index',
+      th_name:            'Nom',
+      th_type:            'Type',
+      th_nullable:        'Nullable',
+      th_required:        'Requis',
+      th_checks:          'Validations',
+      th_description:     'Description',
+      defined_in:         'Défini dans',
+      as_var:             'en tant que',
+      no_columns:         'Aucune colonne définie',
+      nullable_yes:       'nullable',
+      required_no:        'optionnel',
+      badge_coerce:       'coerce',
+      ast_warning:        "⚠ L'import a échoué — métadonnées extraites par analyse AST statique. Les valeurs dynamiques peuvent être manquantes.",
+      filter_type:        'Type',
+      filter_source:      'Source',
+      filter_sort:        'Tri',
+      filter_all:         'Tous',
+      filter_runtime:     'Runtime',
+      filter_ast:         'AST',
+      filter_df_schema:   'DataFrameSchema',
+      filter_df_model:    'DataFrameModel',
+      sort_name_asc:      'Nom A→Z',
+      sort_name_desc:     'Nom Z→A',
+      sort_cols_asc:      'Colonnes ↑',
+      sort_cols_desc:     'Colonnes ↓',
+      schemas_count:      n => `${n} schéma${n !== 1 ? 's' : ''}`,
+      columns_count:      n => `${n} colonne${n !== 1 ? 's' : ''}`,
+    },
+    de: {
+      filter_placeholder: 'Schemata filtern…',
+      loading:            'Schemata werden geladen…',
+      load_error:         'Schemata konnten nicht geladen werden.',
+      no_schemas:         'Keine Pandera-Schemata im Projekt gefunden.',
+      section_columns:    'Spalten',
+      section_index:      'Index',
+      th_name:            'Name',
+      th_type:            'Typ',
+      th_nullable:        'Nullable',
+      th_required:        'Erforderlich',
+      th_checks:          'Validierungen',
+      th_description:     'Beschreibung',
+      defined_in:         'Definiert in',
+      as_var:             'als',
+      no_columns:         'Keine Spalten definiert',
+      nullable_yes:       'nullable',
+      required_no:        'optional',
+      badge_coerce:       'coerce',
+      ast_warning:        '⚠ Import fehlgeschlagen — Metadaten per statischer AST-Analyse extrahiert. Dynamische Werte können fehlen.',
+      filter_type:        'Typ',
+      filter_source:      'Quelle',
+      filter_sort:        'Sortierung',
+      filter_all:         'Alle',
+      filter_runtime:     'Runtime',
+      filter_ast:         'AST',
+      filter_df_schema:   'DataFrameSchema',
+      filter_df_model:    'DataFrameModel',
+      sort_name_asc:      'Name A→Z',
+      sort_name_desc:     'Name Z→A',
+      sort_cols_asc:      'Spalten ↑',
+      sort_cols_desc:     'Spalten ↓',
+      schemas_count:      n => `${n} Schema${n !== 1 ? 'ta' : ''}`,
+      columns_count:      n => `${n} Spalte${n !== 1 ? 'n' : ''}`,
+    },
+  };
+
+  // ── Language state ─────────────────────────────────────────────────────────
+
+  const LANG_KEY  = 'pandera-ui-lang';
+  const THEME_KEY = 'pandera-ui-theme';
+  const LANGS_SET = new Set(LANGS);
+
+  const savedLang   = localStorage.getItem(LANG_KEY);
+  const browserLang = (navigator.language || '').split('-')[0];
+  let lang = (savedLang && LANGS_SET.has(savedLang)) ? savedLang
+           : (LANGS_SET.has(browserLang) ? browserLang : 'en');
+
+  function t(key, ...args) {
+    const entry = tr[lang]?.[key] ?? tr.en[key];
+    return typeof entry === 'function' ? entry(...args) : (entry ?? key);
+  }
+
+  function applyLang(newLang) {
+    lang = newLang;
+    localStorage.setItem(LANG_KEY, lang);
+    document.documentElement.lang = lang;
+
+    document.querySelectorAll('.lang-btn').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.lang === lang)
+    );
+    document.getElementById('search').placeholder = t('filter_placeholder');
+    document.getElementById('count').textContent  = t('schemas_count', allSchemas.length);
+
+    // Re-translate all data-i18n elements (filter labels + sort options)
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = t(el.dataset.i18n);
+    });
+
+    if (activeIdx !== null) renderDetail(allSchemas[activeIdx]);
+    else if (allSchemas.length === 0 && !document.getElementById('loading')) showEmpty();
+  }
+
+  document.getElementById('lang-selector').addEventListener('click', e => {
+    const btn = e.target.closest('.lang-btn');
+    if (btn) applyLang(btn.dataset.lang);
+  });
+
+  // ── Theme state ────────────────────────────────────────────────────────────
+
+  const savedTheme  = localStorage.getItem(THEME_KEY);
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  let currentTheme  = savedTheme || (prefersDark ? 'dark' : 'light');
+
+  function applyTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.dataset.theme = theme === 'light' ? 'light' : '';
+    localStorage.setItem(THEME_KEY, theme);
+    document.getElementById('icon-sun').style.display  = theme === 'dark'  ? '' : 'none';
+    document.getElementById('icon-moon').style.display = theme === 'light' ? '' : 'none';
+  }
+
+  document.getElementById('theme-toggle').addEventListener('click', () =>
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark')
+  );
+
+  applyTheme(currentTheme);
+
+  // ── Filter & sort state ───────────────────────────────────────────────────
+
+  let filterType   = 'all';
+  let filterSource = 'all';
+  let sortOrder    = 'name-asc';
+
+  function getFilteredSchemas() {
+    const q = document.getElementById('search').value.toLowerCase();
+    return allSchemas
+      .map((s, i) => ({ schema: s, idx: i }))
+      .filter(({ schema }) => {
+        if (filterType === 'DataFrameSchema' &&  schema.source_class) return false;
+        if (filterType === 'DataFrameModel'  && !schema.source_class) return false;
+        if (filterSource === 'runtime' && schema.metadata_source !== 'runtime') return false;
+        if (filterSource === 'ast'     && schema.metadata_source !== 'ast')     return false;
+        return schema.name.toLowerCase().includes(q)
+            || schema.file_path.toLowerCase().includes(q)
+            || (schema.source_class || '').toLowerCase().includes(q);
+      })
+      .sort((a, b) => {
+        if (sortOrder === 'name-asc')  return a.schema.name.localeCompare(b.schema.name);
+        if (sortOrder === 'name-desc') return b.schema.name.localeCompare(a.schema.name);
+        if (sortOrder === 'cols-asc')  return a.schema.columns.length - b.schema.columns.length;
+        if (sortOrder === 'cols-desc') return b.schema.columns.length - a.schema.columns.length;
+        return 0;
+      });
+  }
+
+  document.getElementById('type-filter').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    filterType = btn.dataset.val;
+    document.querySelectorAll('#type-filter .filter-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.val === filterType)
+    );
+    renderSidebar();
+  });
+
+  document.getElementById('source-filter').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    filterSource = btn.dataset.val;
+    document.querySelectorAll('#source-filter .filter-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.val === filterSource)
+    );
+    renderSidebar();
+  });
+
+  document.getElementById('sort-select').addEventListener('change', e => {
+    sortOrder = e.target.value;
+    renderSidebar();
+  });
+
+  document.getElementById('search').addEventListener('input', renderSidebar);
+
+  // ── Data & state ──────────────────────────────────────────────────────────
+
+  let allSchemas = [];
+  let activeIdx  = null;
+
+  async function init() {
+    document.getElementById('loading').textContent = t('loading');
+    document.getElementById('search').placeholder  = t('filter_placeholder');
+    applyLang(lang);
+
+    try {
+      const res = await fetch('/api/schemas');
+      if (!res.ok) throw new Error(res.status);
+      allSchemas = await res.json();
+    } catch {
+      try {
+        const demo = await fetch('./demo-data.json');
+        allSchemas = await demo.json();
+      } catch {
+        document.getElementById('loading').textContent = t('load_error');
+        return;
+      }
+    }
+    document.getElementById('count').textContent = t('schemas_count', allSchemas.length);
+    renderSidebar();
+    if (allSchemas.length > 0) selectSchema(0);
+    else showEmpty();
+  }
+
+  // ── Sidebar ───────────────────────────────────────────────────────────────
+
+  function groupByFile(items) {
+    const map = new Map();
+    items.forEach(item => {
+      const fp = item.schema.file_path;
+      if (!map.has(fp)) map.set(fp, []);
+      map.get(fp).push(item);
+    });
+    return map;
+  }
+
+  function renderSidebar() {
+    const list = document.getElementById('schema-list');
+    list.innerHTML = '';
+    const filtered = getFilteredSchemas();
+
+    groupByFile(filtered).forEach((items, filePath) => {
+      const group = document.createElement('div');
+      group.className = 'file-group';
+
+      const label = document.createElement('span');
+      label.className = 'file-label';
+      label.title = filePath;
+      label.textContent = filePath;
+      group.appendChild(label);
+
+      items.forEach(({ schema, idx }) => {
+        const item = document.createElement('div');
+        item.className = 'schema-item' + (idx === activeIdx ? ' active' : '');
+        item.dataset.idx = idx;
+        item.innerHTML = `<span class="dot${schema.source_class ? ' model' : ''}"></span><span>${esc(schema.name)}</span>`;
+        item.addEventListener('click', () => selectSchema(idx));
+        group.appendChild(item);
+      });
+
+      list.appendChild(group);
+    });
+  }
+
+  function selectSchema(idx) {
+    activeIdx = idx;
+    document.querySelectorAll('.schema-item').forEach(el =>
+      el.classList.toggle('active', parseInt(el.dataset.idx) === idx)
+    );
+    renderDetail(allSchemas[idx]);
+  }
+
+  function showEmpty() {
+    document.getElementById('main').innerHTML = `
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+          <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+        </svg>
+        <p>${t('no_schemas')}</p>
+      </div>`;
+  }
+
+  // ── Detail panel ─────────────────────────────────────────────────────────
+
+  function formatCheck(check) {
+    const stats = Object.values(check.statistics || {})
+      .map(v => `<span class="check-val">${esc(String(v))}</span>`)
+      .join(', ');
+    return `<span class="check-tag"><span class="check-name">${esc(check.name)}</span>${stats ? ': ' + stats : ''}</span>`;
+  }
+
+  function renderDetail(schema) {
+    const n = schema.columns.length;
+    const badges = [
+      schema.coerce ? `<span class="badge yellow">${t('badge_coerce')}</span>` : '',
+      schema.source_class
+        ? `<span class="badge blue">DataFrameModel: ${esc(schema.source_class)}</span>`
+        : '<span class="badge green">DataFrameSchema</span>',
+      `<span class="badge">${t('columns_count', n)}</span>`,
+      schema.metadata_source === 'ast' ? '<span class="badge red">AST</span>' : '',
+    ].filter(Boolean).join('');
+
+    const colRows = schema.columns.map(col => {
+      const nullable = col.nullable
+        ? `<span class="flag-yes">${t('nullable_yes')}</span>`
+        : '<span class="flag-no">—</span>';
+      const required = col.required
+        ? '<span class="flag-yes">✓</span>'
+        : `<span class="flag-no">${t('required_no')}</span>`;
+      const checks = col.checks.map(formatCheck).join('');
+      return `<tr>
+        <td><span class="col-name">${esc(col.name)}</span></td>
+        <td>${col.dtype ? `<span class="dtype">${esc(col.dtype)}</span>` : '<span class="flag-no">—</span>'}</td>
+        <td>${nullable}</td>
+        <td>${required}</td>
+        <td>${checks || '<span class="flag-no">—</span>'}</td>
+        <td><span class="desc-text">${esc(col.description || col.title || '')}</span></td>
+      </tr>`;
+    }).join('');
+
+    const emptyRow = `<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px">${t('no_columns')}</td></tr>`;
+
+    document.getElementById('main').innerHTML = `
+      <div class="schema-header">
+        <div>
+          <h2>${esc(schema.name)}</h2>
+          <div class="meta">${badges}</div>
+        </div>
+      </div>
+      ${schema.metadata_source === 'ast' ? `<div class="ast-warning">${t('ast_warning')}</div>` : ''}
+      ${schema.description ? `<p class="schema-desc">${esc(schema.description)}</p>` : ''}
+      <p class="schema-path">
+        ${t('defined_in')} <code>${esc(schema.file_path)}</code>
+        ${schema.var_name !== schema.name ? ` ${t('as_var')} <code>${esc(schema.var_name)}</code>` : ''}
+      </p>
+      <div class="section-title">${t('section_columns')}</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>${t('th_name')}</th><th>${t('th_type')}</th><th>${t('th_nullable')}</th>
+              <th>${t('th_required')}</th><th>${t('th_checks')}</th><th>${t('th_description')}</th>
+            </tr>
+          </thead>
+          <tbody>${colRows || emptyRow}</tbody>
+        </table>
+      </div>
+      ${schema.index ? renderIndex(schema.index) : ''}
+    `;
+  }
+
+  function renderIndex(idx) {
+    return `
+      <div class="section-title">${t('section_index')}</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>${t('th_name')}</th><th>${t('th_type')}</th><th>${t('th_nullable')}</th><th>${t('th_checks')}</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="col-name">${esc(idx.name || '(unnamed)')}</span></td>
+              <td>${idx.dtype ? `<span class="dtype">${esc(idx.dtype)}</span>` : '<span class="flag-no">—</span>'}</td>
+              <td>${idx.nullable ? `<span class="flag-yes">${t('nullable_yes')}</span>` : '<span class="flag-no">—</span>'}</td>
+              <td>${(idx.checks || []).map(formatCheck).join('') || '<span class="flag-no">—</span>'}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  // ── Utils ──────────────────────────────────────────────────────────────────
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,331 @@
+[
+  {
+    "name": "orders",
+    "var_name": "orders_schema",
+    "file_path": "dataframe_schemas.py",
+    "source_class": null,
+    "title": null,
+    "description": "E-commerce order records",
+    "coerce": true,
+    "columns": [
+      {
+        "name": "order_id",
+        "dtype": "int64",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "greater_than",
+            "statistics": {
+              "min_value": 0
+            },
+            "description": null,
+            "error": "greater_than(0)"
+          }
+        ],
+        "title": null,
+        "description": "Unique order identifier"
+      },
+      {
+        "name": "customer_id",
+        "dtype": "int64",
+        "nullable": false,
+        "required": true,
+        "checks": [],
+        "title": null,
+        "description": "FK to customers table"
+      },
+      {
+        "name": "amount",
+        "dtype": "float64",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "greater_than_or_equal_to",
+            "statistics": {
+              "min_value": 0.0
+            },
+            "description": null,
+            "error": "greater_than_or_equal_to(0.0)"
+          },
+          {
+            "name": "less_than",
+            "statistics": {
+              "max_value": 1000000
+            },
+            "description": null,
+            "error": "less_than(1000000)"
+          }
+        ],
+        "title": null,
+        "description": "Order total in USD"
+      },
+      {
+        "name": "status",
+        "dtype": "string[python]",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "isin",
+            "statistics": {
+              "allowed_values": "['pending', 'shipped', 'delivered', 'cancelled']"
+            },
+            "description": null,
+            "error": "isin(['pending', 'shipped', 'delivered', 'cancelled'])"
+          }
+        ],
+        "title": null,
+        "description": "Current order status"
+      },
+      {
+        "name": "created_at",
+        "dtype": "datetime64[ns]",
+        "nullable": false,
+        "required": true,
+        "checks": [],
+        "title": null,
+        "description": null
+      }
+    ],
+    "index": null,
+    "metadata_source": "runtime"
+  },
+  {
+    "name": "products",
+    "var_name": "products_schema",
+    "file_path": "dataframe_schemas.py",
+    "source_class": null,
+    "title": null,
+    "description": null,
+    "coerce": false,
+    "columns": [
+      {
+        "name": "sku",
+        "dtype": "string[python]",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "str_matches",
+            "statistics": {
+              "pattern": "^[A-Z]{2}-\\d{4}$"
+            },
+            "description": null,
+            "error": "str_matches('^[A-Z]{2}-\\d{4}$')"
+          }
+        ],
+        "title": null,
+        "description": null
+      },
+      {
+        "name": "name",
+        "dtype": "string[python]",
+        "nullable": false,
+        "required": true,
+        "checks": [],
+        "title": null,
+        "description": null
+      },
+      {
+        "name": "price",
+        "dtype": "float64",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "greater_than",
+            "statistics": {
+              "min_value": 0
+            },
+            "description": null,
+            "error": "greater_than(0)"
+          }
+        ],
+        "title": null,
+        "description": null
+      },
+      {
+        "name": "in_stock",
+        "dtype": "bool",
+        "nullable": false,
+        "required": true,
+        "checks": [],
+        "title": null,
+        "description": null
+      }
+    ],
+    "index": null,
+    "metadata_source": "runtime"
+  },
+  {
+    "name": "users",
+    "var_name": "UserSchema",
+    "file_path": "schema_models.py",
+    "source_class": "UserSchema",
+    "title": null,
+    "description": "Registered platform users",
+    "coerce": true,
+    "columns": [
+      {
+        "name": "user_id",
+        "dtype": "int64",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "greater_than",
+            "statistics": {
+              "min_value": 0
+            },
+            "description": null,
+            "error": "greater_than(0)"
+          }
+        ],
+        "title": null,
+        "description": "Primary key"
+      },
+      {
+        "name": "email",
+        "dtype": "string[python]",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "str_matches",
+            "statistics": {
+              "pattern": ".+@.+\\..+"
+            },
+            "description": null,
+            "error": "str_matches('.+@.+\\..+')"
+          }
+        ],
+        "title": null,
+        "description": "User email address"
+      },
+      {
+        "name": "age",
+        "dtype": "Int64",
+        "nullable": true,
+        "required": true,
+        "checks": [
+          {
+            "name": "greater_than_or_equal_to",
+            "statistics": {
+              "min_value": 0
+            },
+            "description": null,
+            "error": "greater_than_or_equal_to(0)"
+          },
+          {
+            "name": "less_than_or_equal_to",
+            "statistics": {
+              "max_value": 120
+            },
+            "description": null,
+            "error": "less_than_or_equal_to(120)"
+          }
+        ],
+        "title": null,
+        "description": "Age in years"
+      },
+      {
+        "name": "role",
+        "dtype": "string[python]",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "isin",
+            "statistics": {
+              "allowed_values": "['admin', 'editor', 'viewer']"
+            },
+            "description": null,
+            "error": "isin(['admin', 'editor', 'viewer'])"
+          }
+        ],
+        "title": null,
+        "description": "Access role"
+      }
+    ],
+    "index": null,
+    "metadata_source": "runtime"
+  },
+  {
+    "name": "events",
+    "var_name": "EventSchema",
+    "file_path": "schema_models.py",
+    "source_class": "EventSchema",
+    "title": null,
+    "description": null,
+    "coerce": false,
+    "columns": [
+      {
+        "name": "event_id",
+        "dtype": "string[python]",
+        "nullable": false,
+        "required": true,
+        "checks": [],
+        "title": null,
+        "description": "UUID of the event"
+      },
+      {
+        "name": "user_id",
+        "dtype": "int64",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "greater_than",
+            "statistics": {
+              "min_value": 0
+            },
+            "description": null,
+            "error": "greater_than(0)"
+          }
+        ],
+        "title": null,
+        "description": null
+      },
+      {
+        "name": "event_type",
+        "dtype": "string[python]",
+        "nullable": false,
+        "required": true,
+        "checks": [
+          {
+            "name": "isin",
+            "statistics": {
+              "allowed_values": "['click', 'view', 'purchase']"
+            },
+            "description": null,
+            "error": "isin(['click', 'view', 'purchase'])"
+          }
+        ],
+        "title": null,
+        "description": null
+      },
+      {
+        "name": "timestamp",
+        "dtype": "datetime64[ns]",
+        "nullable": false,
+        "required": true,
+        "checks": [],
+        "title": null,
+        "description": null
+      },
+      {
+        "name": "properties",
+        "dtype": "string[python]",
+        "nullable": true,
+        "required": true,
+        "checks": [],
+        "title": null,
+        "description": null
+      }
+    ],
+    "index": null,
+    "metadata_source": "runtime"
+  }
+]

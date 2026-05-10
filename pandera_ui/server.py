@@ -35,5 +35,5 @@ def get_coverage() -> CoverageReport:
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
     """Serve the single-page UI."""
-    html = Path(__file__).parent.parent / "frontend" / "index.html"
+    html = Path(__file__).parent / "frontend" / "index.html"
     return html.read_text(encoding="utf-8")
