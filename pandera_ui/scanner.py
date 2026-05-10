@@ -32,6 +32,26 @@ _SKIP_DIRS = {
 _SIDE_EFFECT_PACKAGES = {"airflow", "django", "flask", "celery"}
 
 
+def _package_sys_path_entries(root: Path) -> list[str]:
+    """Return sys.path candidates for *root* and all its parent packages.
+
+    When the scan root is itself a Python package (has __init__.py), its
+    parent directories up to the first non-package ancestor are also valid
+    sys.path entries.  This lets imports like ``from ibp.calculations.x``
+    succeed when the user points pandera-ui at the inner ``calculations/``
+    directory rather than the project root.
+    """
+    entries = [str(root)]
+    candidate = root
+    while (candidate / "__init__.py").exists():
+        parent = candidate.parent
+        if parent == candidate:
+            break
+        entries.append(str(parent))
+        candidate = parent
+    return entries
+
+
 def _has_side_effect_imports(path: Path) -> bool:
     """Return True if this file imports packages known to cause side effects on import."""
     try:
@@ -71,9 +91,9 @@ def scan_project(
     ``node_modules``, ``dist``, and ``build`` are skipped automatically.
     """
     root = Path(project_path).resolve()
-    root_str = str(root)
-    if root_str not in sys.path:
-        sys.path.insert(0, root_str)
+    for entry in reversed(_package_sys_path_entries(root)):
+        if entry not in sys.path:
+            sys.path.insert(0, entry)
 
     py_files = [
         f for f in sorted(root.rglob("*.py"))

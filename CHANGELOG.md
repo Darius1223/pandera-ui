@@ -2,6 +2,11 @@
 
 All notable changes to pandera-ui are documented here.
 
+## [1.2.1] — 2026-05-10
+
+### Fixed
+- Runtime import now succeeds for files that use absolute intra-project imports (e.g. `from ibp.calculations.models.base import ...`). Previously only the scan root was added to `sys.path`; now all parent package directories up to the first non-package ancestor are added automatically. This eliminates the "⚠ Import failed" warning for the vast majority of files in nested-package projects.
+
 ## [1.2.0] — 2026-05-10
 
 ### Fixed
