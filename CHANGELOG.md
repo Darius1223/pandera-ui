@@ -2,6 +2,15 @@
 
 All notable changes to pandera-ui are documented here.
 
+## [1.2.0] — 2026-05-10
+
+### Fixed
+- AST extractor now discovers subclasses of project-local base models (e.g. `class MyModel(BaseDataFrameModel)` where `BaseDataFrameModel` lives in another file). Previously only direct `DataFrameModel` inheritance was detected in AST mode, yielding 0 schemas for all such files.
+- Files importing Airflow, Django, Flask, or Celery are now scanned with AST-only mode instead of triggering runtime import. This eliminates SQLAlchemy/metastore errors that were printed to stderr whenever Airflow DAG or config files were present in the project.
+
+### Changed
+- Default `--workers` increased from 1 to 4; `scan_project()` default matches. Scanning a large project is now ~4× faster out of the box without any flag required.
+
 ## [1.1.0] — 2026-05-10
 
 ### Added

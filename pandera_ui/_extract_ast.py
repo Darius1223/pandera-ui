@@ -79,7 +79,25 @@ def _is_df_schema_call(node: ast.expr) -> bool:
 
 def _collect_model_names(tree: ast.Module) -> set[str]:
     """Return all class names in *tree* that transitively inherit from DataFrameModel."""
-    known: set[str] = {"DataFrameModel"}
+    local_names = {node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)}
+
+    # Seed with DataFrameModel plus any imported name used as a base class.
+    # This handles project-local base classes (e.g. BaseDataFrameModel) defined
+    # in other files — we can't know at AST time whether they're pandera models,
+    # so we optimistically include them and let _build_from_class do the filtering.
+    external_bases: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            for base in node.bases:
+                name: Optional[str] = None
+                if isinstance(base, ast.Attribute):
+                    name = base.attr
+                elif isinstance(base, ast.Name):
+                    name = base.id
+                if name and name not in local_names:
+                    external_bases.add(name)
+
+    known: set[str] = {"DataFrameModel"} | external_bases
     changed = True
     while changed:
         changed = False
@@ -95,6 +113,7 @@ def _collect_model_names(tree: ast.Module) -> set[str]:
                         known.add(node.name)
                         changed = True
     known.discard("DataFrameModel")
+    known -= external_bases  # only return locally-defined class names
     return known
 
 

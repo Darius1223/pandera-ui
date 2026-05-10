@@ -50,7 +50,7 @@ def cli_app(
         help="Print per-file scan progress to stderr",
     ),
     workers: int = typer.Option(
-        1,
+        4,
         "--workers",
         help="Number of parallel workers for scanning",
     ),

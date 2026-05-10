@@ -13,6 +13,7 @@ Usage::
         print(s.name, [c.name for c in s.columns])
 """
 
+import ast
 import sys
 from pathlib import Path
 
@@ -27,11 +28,32 @@ _SKIP_DIRS = {
     "node_modules", ".tox", "dist", "build", "site-packages",
 }
 
+# Top-level packages whose import triggers DB/network connections or heavy init.
+_SIDE_EFFECT_PACKAGES = {"airflow", "django", "flask", "celery"}
+
+
+def _has_side_effect_imports(path: Path) -> bool:
+    """Return True if this file imports packages known to cause side effects on import."""
+    try:
+        source = path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+    except Exception:
+        return False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name.split(".")[0] in _SIDE_EFFECT_PACKAGES:
+                    return True
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            if node.module.split(".")[0] in _SIDE_EFFECT_PACKAGES:
+                return True
+    return False
+
 
 def scan_project(
     project_path: str | Path,
     *,
-    workers: int = 1,
+    workers: int = 4,
     verbose: bool = False,
     no_import: bool = False,
 ) -> list[SchemaMetadata]:
@@ -87,7 +109,7 @@ def _scan_file(
     verbose: bool,
     no_import: bool,
 ) -> list[SchemaMetadata]:
-    if no_import:
+    if no_import or _has_side_effect_imports(path):
         schemas = ast_extract(path, relative)
         for s in schemas:
             s.metadata_source = "ast"
