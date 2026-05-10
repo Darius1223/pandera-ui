@@ -19,13 +19,12 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "pandera>=0.19",
+    "pandera>=0.27.1",
     "fastapi>=0.111",
     "uvicorn[standard]>=0.30",
     "typer>=0.12",
     "pydantic>=2.0",
-    "numpy>=2.2.6",
-    "pandas>=2.3.3",
+    "pandas>=2.1.1",
 ]
 
 [project.urls]
