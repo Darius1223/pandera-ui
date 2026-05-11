@@ -2,6 +2,11 @@
 
 All notable changes to pandera-ui are documented here.
 
+## [1.2.2] — 2026-05-11
+
+### Fixed
+- Corrected PyPI metadata: `Homepage` now points to the docs site (`darius1223.github.io/pandera-ui`), `Repository` now points to the correct GitHub account (`Darius1223/pandera-ui`). Previously both fields referenced a wrong URL.
+
 ## [1.2.1] — 2026-05-10
 
 ### Fixed

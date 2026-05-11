@@ -1,6 +1,6 @@
 [project]
 name = "pandera-ui"
-version = "1.2.1"
+version = "1.2.2"
 description = "Swagger-like UI for Pandera dataframe schemas"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -28,8 +28,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/darius-krsk/pandera-ui"
-Repository = "https://github.com/darius-krsk/pandera-ui"
+Homepage = "https://darius1223.github.io/pandera-ui/"
+Repository = "https://github.com/Darius1223/pandera-ui"
 
 [project.scripts]
 pandera-ui = "pandera_ui.cli:main"
