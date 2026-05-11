@@ -2,6 +2,11 @@
 
 All notable changes to pandera-ui are documented here.
 
+## [1.2.3] — 2026-05-11
+
+### Changed
+- Locked dependency versions updated (`uv.lock` refresh).
+
 ## [1.2.2] — 2026-05-11
 
 ### Fixed
